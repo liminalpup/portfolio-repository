@@ -1,3 +1,6 @@
+//TODO: help/look fx's
+
+
 const readline = require('readline');
 const readLineInterface = readline.createInterface(
   process.stdin,
@@ -23,7 +26,7 @@ class Location {
     this.name = name;
     this.description = description;
     this.availableMoves = availableMoves;
-    this.availableCommands = availableActions;
+    this.availableActions = availableActions;
     this.availableItems = availableItems;
     this.enemies = enemies;
   }
@@ -148,17 +151,17 @@ async function start() {
   }
 };
 
-// ! nextRoom function - this takes the newLocation from the Start Fx
 
 logged = false;
 
-async function nextRoom(newLocation) {
 
+// ! nextRoom function - this takes the newLocation from the Start Fx
+//* (handles move to next room)
+async function nextRoom(newLocation) {
+  
   currentLocation = newLocation;
- 
+  
   let room = locationLookUp[currentLocation];
-  let items = room.availableItems;
-  console.log(items)
   let roomDescription = room.description;
   
   console.log(`Your location: ${newLocation}
@@ -167,14 +170,40 @@ async function nextRoom(newLocation) {
   
   console.log(`ITEMS:`)
   for (let [itemName] of Object.entries(room.availableItems)) {
-    console.log(itemName);
+    console.log("*" + itemName);
   }
   
-  
-  
-
   let playerAnswer = await ask(`What would you like to do? \n`);
-  let answerArray = playerAnswer.trim().split("");
+  let answerArray = playerAnswer.split(" ");
+  let moves = ["n", "s", "e", "w"];
+
+  if (moves.includes(answerArray[0])) {
+    moveCommands(answerArray[0]);
+  } else if (answerArray.length >= 2) {
+    roomActions(answerArray);
+  } else {
+    console.log("You can't do that!");
+    nextRoom(currentLocation);
+  }
+}
+
+//! sameRoom fx
+// This fx is very similar to nextRoom, but to specifically handle roomActions so that, when one is carried out, the intro information for the room is not repeated.
+async function sameRoom(currentLocation) {
+  
+  let room = locationLookUp[currentLocation];
+  
+  console.log(`Your location: ${currentLocation}\n`);
+  
+  
+  console.log(`ITEMS:`)
+  for (let [itemName] of Object.entries(room.availableItems)) {
+    console.log(`* ${itemName}`);
+  }
+  console.log(`\n`)
+  
+  let playerAnswer = await ask(`What would you like to do? \n`);
+  let answerArray = playerAnswer.split(" ");
   let moves = ["n", "s", "e", "w"];
 
   if (moves.includes(answerArray[0])) {
@@ -191,7 +220,7 @@ async function nextRoom(newLocation) {
 
 function handleInvalidMove() {
 console.log("\n   You can't do that! Try again... \n");
-        nextRoom(currentLocation);
+        sameRoom(currentLocation);
 }
 async function moveCommands(moveInput) {
   let room = locationLookUp[currentLocation]; // accesses the current location object from the locationLookUp
@@ -233,66 +262,40 @@ async function moveCommands(moveInput) {
 };
 
 // ? TODO: finish roomActions function
-function roomActions(answerArray) {
-  let room = locationLookUp[currentLocation];
-  let action = answerArray[0];
-  let target = answerArray[1];
-  let actions = room.availableActions;
-  let targets = Object.keys(room.availableItems);
+async function roomActions(answerArray) {
 
-  if (actions && actions.includes(action)) {
-    if (targets.includes(target)) {
+  let room = locationLookUp[currentLocation];
+  let action = answerArray[0]
+  let targetArray = answerArray.slice(1)
+  let target = targetArray.join(' ');
+  let availableItems = room.availableItems;
 
       switch (action) {
         case "inspect":
-          console.log(`You inspect the ${target}. \n
-          ${locationLookUp[currentLocation]
-              .availableItems[target]}`);
-          nextRoom(currentLocation);
-          break;
-        case "take":
-          if (room.availableItems && room.availableItems[target]) {
-            console.log('You take the target.')
-            inventory.push(target);
-            delete room.availableItems[target];
-      
-          } else {
-            console.log("This item cannot be taken");
+          if (action == "inspect" && availableItems[target]) {
+            
+            console.log(`You inspect the ${target}. \n
+            ${availableItems[target]} \n`);
+            sameRoom(currentLocation);
+            break;
+
           }
-          nextRoom(currentLocation);
+        case "take":
+          if (action == "take" && availableItems[target]) {
+            console.log(`\n               You take the ${target}.\n`)
+            inventory.push(target);
+            delete availableItems[target];
+            sameRoom(currentLocation);
+            break;
+          } else {
+            handleInvalidMove();
+            break;
+          }
+          sameRoom(currentLocation);
           break;
         default:
           console.log(`Can't perform that action "${action}" on "${target}". Try again..`);
-      }
-    } else {
-      console.log(`${target} is not available to inspect. Try again..`);
-      nextRoom(currentLocation);
-    }
-  } else {
-    console.log(`"${action}" is not a valid action in this location. Try again..`);
-    nextRoom(currentLocation);
+          nextRoom(currentLocation);
   }
 }
 
-function inspectItem(targetItem) { // save current location as 'room'.
-    console.log(`You inspect the ${targetItem} \n
-                ${room.inventoryItems[targetItem]}\n`
-    ); //display "You inspect the {item}" followed by given description of item.
-    nextRoom(currentLocation); // call script for current location again.
-  }
-
-
-function takeItem(targetItem) {
-
-  if (room.availableItems && room.availableItems[targetItem]) {
-    console.log(`You took the ${targetItem}`);
-    inventory.push(targetItem);
-    delete room.availableItems[targetItem]
-  } else {
-    console.log("This item cannot be taken.")
-  }
-}
-
-function lookAround(target) {
-  console.log(room.description[currentLocation]);
-}
