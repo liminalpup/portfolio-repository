@@ -1,4 +1,10 @@
 //TODO: help/look fx's
+//* sameRoom() skips room descriptions after room actions when player didn't change room. look/help fx's can repeat description or show available commands
+//TODO: weapon class constructor? (how will that change inventory rules? e.g. rifle)
+//*ideas: HP, fx for randomized hits (maybe), inventory influences stats or something like that?
+//TODO: enemies constructor (enemies extends Location? maybe to attach each enemy to locations??) + hp system + enemies locations
+//TODO: build out player class to incl. inventory, weapons, equip/unequip
+//TODO: look for DOM directions in sdb repo to add to this project
 
 
 const readline = require('readline');
@@ -14,6 +20,7 @@ async function ask(textPrompt) {
 };
 
 start();
+//! LOCATIONS ------------------------------------
 class Location {
   constructor(
     name,
@@ -115,6 +122,8 @@ let river = new Location(
   },
   []
 );
+//! END OF LOCATIONS ----------------------------
+
 
 // ! Location Lookup
 let locationLookUp = {
