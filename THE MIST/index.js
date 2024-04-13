@@ -7,6 +7,7 @@
 //TODO: look for DOM directions in sdb repo to add to this project
 
 
+const { Stats } = require('fs');
 const readline = require('readline');
 const readLineInterface = readline.createInterface(
   process.stdin,
@@ -207,18 +208,32 @@ async function start() {
 
   The house you are in is unfamiliar to you, and you don’t know how you got here. \n
   To the north, there is a window and it is boarded shut. \n
-  To the east, there is the door that leads out into a hallway.. Which way would you like to go?
-  \n`;
+  To the east, there is the door that leads out into a hallway.. \n
+  Set stats before starting game?`
+  let startingAnswer = await ask(startMessage);
+  let startingAnswerLowercase = startingAnswer.toLowerCase();
+  switch (startingAnswerLowercase) {
+    case "yes":
+    case "y":
+      upgradeStats();
+      break;
+    case "no":
+    case "n":
+      nextRoom(currentLocation);
+      const playerAnswer = await ask(`\n Which way would you like to go?`)
+      moveCommands(playerAnswer);
+    }
+    nextRoom(currentLocation);
+  
+  
 
-  const playerAnswer = await ask(startMessage);
-
-  if (playerAnswer === "e") {
-    let newLocation = locationLookUp[currentLocation].availableMoves[playerAnswer];
-    nextRoom(newLocation);
-  } else {
-    console.log(`You can't go that way! Try again.\n`);
-    sameRoom(currentLocation);
-  }
+  // if (playerAnswer === "e") {
+  //   let newLocation = locationLookUp[currentLocation].availableMoves[playerAnswer];
+  //   nextRoom(newLocation);
+  // } else {
+  //   console.log(`You can't go that way! Try again.\n`);
+  //   sameRoom(currentLocation);
+  // }
 };
 
 
@@ -382,59 +397,134 @@ async function roomActions(answerArray) {
 //* these stats will be affected by several functions, e.g. interactions with enemies, controlling entrance access/wield ability (must be a certain level), and will affect damage done by each weapon. certain body stat will unlock escape methods. stealth will give ability to avoid enemies
 // Perhaps in future will implement a certain amount of skill points available by default and earned by in-game actions.
 //! Player Objects Below------------------------------
-function Stats() {
-    this.hp = hp;
-    this.strength = strength;
-    this.stealth = stealth;
-    this.body = body;
-    this.combat = combat;
-  this.skillPoints = skillPoints;
-  
-  const defaultStats = new Stats({
-    hp: 100,
-    strength: 100,
-    stealth: 2,
-    body: 2,
-    combat: 2,
-    skillPoints: 10,
-  });
-  
+function Player(player) {
+  this.hp = player.hp || 100;
+  this.strength = player.strength || 2;
+  this.stealth = player.stealth || 2;
+  this.body = player.body || 2;
+  this.combat = player.combat || 2;
+      this.skillPoints = player.skillPoints || 2
+};
 
-  
-  function displayStats(defaultStats) {
-  if (defaultStats.skillPoints == 10)
-  console.log(defaultStats());
+const defaultStats = new Player({
+  hp: 100,
+  strength: 1,
+  stealth: 1,
+  body: 1,
+  combat: 1,
+  skillPoints: 12
+});
+
+let stats = defaultStats;
+
+function displayStats() {
+  return defaultStats;
 }
 
+const upgradeStats = async (stats) => {
+  console.log("Player Stats: " + defaultStats);
+  //!-----Stat Upgrade Functions Below -------
+  const stat = await ask(`\n Which stat would you like to upgrade?`);
 
+  const upgradeStrengthStat = async (stat) => {
+    if (stat == "strength") {
+      let spentSkillPoints = await ask(`\n How many points would you like to add to the Strength category? \n     `);
+      let points = Number(spentSkillPoints);
 
-async function playerActions(playerAction) {
-  let action = playerAction;
-  switch (action) {
-    case "stats": 
-      if (action == "stats") {
-        console.log("works from stats");
-        displayStats();
-        sameRoom(currentLocation);
-       }
-      
-    case "weapons": 
-      if (action == "weapons") {
-        //display weapons and mark equipped as [Equipped] and unequipped as [Equip], with option to change 
-        console.log("works from weapons");
-        sameRoom(currentLocation);
-      }
-    
-    case "inventory":
-      if (playerAction == "inventory") {
-        //display inventory
-        console.log(`\n
-          INVENTORY:
-          `);
-        console.log(inventory)
-        console.log(`\n`)
-        sameRoom(currentLocation);
-      }
+      skillPoints -= points
+      strength += points;
+      hp += points * 10;
+      print(`Strength Points: ${strength}\n
+            Skill Points remaining: ${skillPoints}`);
+    } else {
+      handleInvalidMove();
     }
   }
 
+  const upgradeStealthStat = async (stat) => {
+    if (stat == "stealth") {
+      let spentSkillPoints = await ask(`\n How many points would you like to add to the Stealth category? \n     `);
+      let points = Number(spentSkillPoints);
+
+      skillPoints -= points
+      stealth += points;
+      hp += points * 10;
+      print(`Stealth Points: ${stealth}\n
+            Skill Points remaining: ${skillPoints}`);
+    } else {
+      handleInvalidMove();
+    }
+  }
+
+  const upgradeBodyStat = async (stat) => {
+    if (stat == "body") {
+      let spentSkillPoints = await ask(`\n How many points would you like to add to the Body category? \n     `);
+      let points = Number(spentSkillPoints);
+
+      skillPoints -= points
+      body += points;
+      hp += points * 10;
+      print(`Body Points: ${body}\n
+            Skill Points remaining: ${skillPoints}`);
+    } else {
+      handleInvalidMove();
+    }
+  }
+      
+  const upgradeCombatStat = async (stat) => {
+    if (stat == "combat") {
+      let spentSkillPoints = await ask(`\n How many points would you like to add to the Combat category? \n     `);
+      let points = Number(spentSkillPoints);
+
+      skillPoints -= points
+      combat += points;
+      hp += points * 10;
+      print(`Combat Points: ${combat}\n
+            Skill Points remaining: ${skillPoints}`);
+    } else {
+      handleInvalidMove();
+    }
+  }
+
+
+  
+    
+  if (stat) {
+    console.log(`/\n Upgrading: ${stat} \n`)
+    switch (stat) {
+      case "strength":
+        upgradeStrengthStat();
+      case "stealth":
+        upgradeStealthStat();
+    }
+  }
+};
+
+  async function playerActions(playerAction) {
+    let action = playerAction;
+    switch (action) {
+      case "stats":
+        if (action == "stats") {
+          console.log(defaultStats);
+          sameRoom(currentLocation);
+        }
+      
+      case "weapons":
+        if (action == "weapons") {
+          //display weapons and mark equipped as [Equipped] and unequipped as [Equip], with option to change 
+          console.log("works from weapons");
+          sameRoom(currentLocation);
+        }
+    
+      case "inventory":
+        if (playerAction == "inventory") {
+          //display inventory
+          console.log(`\n
+          INVENTORY:
+          `);
+          console.log(inventory)
+          console.log(`\n`)
+          sameRoom(currentLocation);
+        }
+    }
+  }
