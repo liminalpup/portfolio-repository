@@ -122,7 +122,6 @@ let river = new Location(
   },
   []
 );
-//! END OF LOCATIONS ----------------------------
 
 
 // ! Location Lookup
@@ -135,6 +134,7 @@ let locationLookUp = {
   "dirt road": dirtRoad,
   river: river,
 };
+//! END OF LOCATIONS ----------------------------
 
 // ! Start Function
 
@@ -155,8 +155,8 @@ async function start() {
     let newLocation = locationLookUp[currentLocation].availableMoves[playerAnswer];
     nextRoom(newLocation);
   } else {
-    console.log("You can't go that way! Try again.");
-    start();
+    console.log(`You can't go that way! Try again.\n`);
+    sameRoom(currentLocation);
   }
 };
 
@@ -173,7 +173,7 @@ async function nextRoom(newLocation) {
   let room = locationLookUp[currentLocation];
   let roomDescription = room.description;
   
-  console.log(`Your location: ${newLocation}
+  console.log(`         Your location: ${currentLocation}\n
   ${roomDescription}`);
   
   
@@ -181,15 +181,17 @@ async function nextRoom(newLocation) {
   for (let [itemName] of Object.entries(room.availableItems)) {
     console.log("*" + itemName);
   }
-  
+  console.log('\n \n')
   let playerAnswer = await ask(`What would you like to do? \n`);
   let answerArray = playerAnswer.split(" ");
   let moves = ["n", "s", "e", "w"];
-
+  let playerQueries = ["stats", "weapons", "inventory"];
   if (moves.includes(answerArray[0])) {
     moveCommands(answerArray[0]);
   } else if (answerArray.length >= 2) {
     roomActions(answerArray);
+  } else if (playerQueries.includes(playerAnswer)) {
+    playerActions(playerAnswer);
   } else {
     console.log("You can't do that!");
     nextRoom(currentLocation);
@@ -202,7 +204,7 @@ async function sameRoom(currentLocation) {
   
   let room = locationLookUp[currentLocation];
   
-  console.log(`Your location: ${currentLocation}\n`);
+  console.log(`         Your location: ${currentLocation}\n`);
   
   
   console.log(`ITEMS:`)
@@ -214,11 +216,13 @@ async function sameRoom(currentLocation) {
   let playerAnswer = await ask(`What would you like to do? \n`);
   let answerArray = playerAnswer.split(" ");
   let moves = ["n", "s", "e", "w"];
-
+  let playerQueries = ["stats", "weapons", "inventory"];
   if (moves.includes(answerArray[0])) {
     moveCommands(answerArray[0]);
   } else if (answerArray.length >= 2) {
     roomActions(answerArray);
+  } else if (playerQueries.includes(playerAnswer)) {
+    playerActions(playerAnswer);
   } else {
     console.log("You can't do that!");
     nextRoom(currentLocation);
@@ -278,6 +282,7 @@ async function roomActions(answerArray) {
   let targetArray = answerArray.slice(1)
   let target = targetArray.join(' ');
   let availableItems = room.availableItems;
+  let roomDescription = room.description;
 
       switch (action) {
         case "inspect":
@@ -300,6 +305,10 @@ async function roomActions(answerArray) {
             handleInvalidMove();
             break;
           }
+        case "look":
+          if (action == "look") {
+            console.log(roomDescription);
+          }
           sameRoom(currentLocation);
           break;
         default:
@@ -307,4 +316,66 @@ async function roomActions(answerArray) {
           nextRoom(currentLocation);
   }
 }
+
+//TODO: create a stats object that holds default player stats
+//* these stats will be affected by several functions, e.g. interactions with enemies, controlling entrance access/wield ability (must be a certain level), and will affect damage done by each weapon. certain body stat will unlock escape methods. stealth will give ability to avoid enemies
+// Perhaps in future will implement a certain amount of skill points available by default and earned by in-game actions.
+//! Player Objects Below------------------------------
+class Stats {
+  constructor(
+    hp,
+    strength,
+    stealth,
+    body,
+    combat,
+    skillPoints,
+  ) {
+    this.hp = hp;
+    this.strength = strength;
+    this.stealth = stealth;
+    this.body = body;
+    this.combat = combat;
+    this.skillPoints = skillPoints;
+  }
+  };
+
+let defaultStats = {
+  hp: 100,
+  strength: 1,
+  stealth: 1,
+  body: 1,
+  combat: 1,
+  skillPoints: 12,
+}
+
+
+
+async function playerActions(playerAction) {
+  let action = playerAction;
+  switch (action) {
+    case "stats": 
+      if (action == "stats") {
+        console.log("works from stats");
+        sameRoom(currentLocation);
+       }
+      
+    case "weapons": 
+      if (action == "weapons") {
+        //display weapons and mark equipped as [Equipped] and unequipped as [Equip], with option to change 
+        console.log("works from weapons");
+        sameRoom(currentLocation);
+      }
+    
+    case "inventory":
+      if (playerAction == "inventory") {
+        //display inventory
+        console.log(`\n
+          INVENTORY:
+          `);
+        console.log(inventory)
+        console.log(`\n`)
+        sameRoom(currentLocation);
+      }
+    }
+  }
 
