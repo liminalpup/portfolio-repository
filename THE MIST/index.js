@@ -134,6 +134,67 @@ let locationLookUp = {
   "dirt road": dirtRoad,
   river: river,
 };
+
+//! All Available Moves
+
+function Directions(directions) {
+  this.n = directions.n || "north";
+  this.s = directions.s || "south";
+  this.e = directions.e || "east";
+  this.w = directions.w || "west";
+}
+
+function RoomActions(actions) {
+  this.inspect = actions.inspect || "inspect an item";
+  this.take = actions.take || "take an item";
+  this.look = actions.look || "Room details";
+  this.help = actions.help || "help";
+}
+
+function PlayerActions(actions) {
+  this.weapons = actions.weapons || "view all available weapons";
+  this.stats = actions.stats || "view your stats";
+  this.inventory = actions.inventory || "view your inventory";
+  this.equip = actions.equip || "equip a weapon";
+  this.unequip = actions.unequip || "unequip a weapon";
+}
+
+const directionsObj = new Directions({
+  n: "north",
+  s: "south",
+  e: "east",
+  w: "west",
+});
+
+const roomActionsObj = new RoomActions({
+  inspect: "inspect an item",
+  take: "take an item",
+  look: "Room details",
+  help: "help",
+});
+
+const playerActionsObj = new PlayerActions({
+  weapons: "view all available weapons",
+  stats: "view your stats",
+  inventory: "view your inventory",
+  equip: "equip a weapon",
+  unequip: "unequip a weapon",
+});
+
+const allAvailableMoves = [directionsObj, roomActionsObj, playerActionsObj];
+
+//TODO: Need to put Look/help fx's in here
+// handleQueries(answerArray[0]) {
+//   let query = answerArray[0]
+  
+//   switch (query) {
+//     case "help":
+//       return console.log(allAvailableMoves);
+    
+//   }
+// }
+console.log(allAvailableMoves);
+
 //! END OF LOCATIONS ----------------------------
 
 // ! Start Function
@@ -321,31 +382,28 @@ async function roomActions(answerArray) {
 //* these stats will be affected by several functions, e.g. interactions with enemies, controlling entrance access/wield ability (must be a certain level), and will affect damage done by each weapon. certain body stat will unlock escape methods. stealth will give ability to avoid enemies
 // Perhaps in future will implement a certain amount of skill points available by default and earned by in-game actions.
 //! Player Objects Below------------------------------
-class Stats {
-  constructor(
-    hp,
-    strength,
-    stealth,
-    body,
-    combat,
-    skillPoints,
-  ) {
+function Stats() {
     this.hp = hp;
     this.strength = strength;
     this.stealth = stealth;
     this.body = body;
     this.combat = combat;
-    this.skillPoints = skillPoints;
-  }
-  };
+  this.skillPoints = skillPoints;
+  
+  const defaultStats = new Stats({
+    hp: 100,
+    strength: 100,
+    stealth: 2,
+    body: 2,
+    combat: 2,
+    skillPoints: 10,
+  });
+  
 
-let defaultStats = {
-  hp: 100,
-  strength: 1,
-  stealth: 1,
-  body: 1,
-  combat: 1,
-  skillPoints: 12,
+  
+  function displayStats(defaultStats) {
+  if (defaultStats.skillPoints == 10)
+  console.log(defaultStats());
 }
 
 
@@ -356,6 +414,7 @@ async function playerActions(playerAction) {
     case "stats": 
       if (action == "stats") {
         console.log("works from stats");
+        displayStats();
         sameRoom(currentLocation);
        }
       
