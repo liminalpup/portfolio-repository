@@ -213,17 +213,14 @@ async function start() {
   let startingAnswer = await ask(startMessage);
   let startingAnswerLowercase = startingAnswer.toLowerCase();
   switch (startingAnswerLowercase) {
-    case "yes":
-    case "y":
+    case "yes", "y":
       upgradeStats();
       break;
-    case "no":
-    case "n":
+    case "no", "n":
       nextRoom(currentLocation);
       const playerAnswer = await ask(`\n Which way would you like to go?`)
       moveCommands(playerAnswer);
     }
-    nextRoom(currentLocation);
   
   
 
@@ -398,12 +395,13 @@ async function roomActions(answerArray) {
 // Perhaps in future will implement a certain amount of skill points available by default and earned by in-game actions.
 //! Player Objects Below------------------------------
 function Player(player) {
-  this.hp = player.hp || 100;
-  this.strength = player.strength || 2;
-  this.stealth = player.stealth || 2;
-  this.body = player.body || 2;
-  this.combat = player.combat || 2;
-      this.skillPoints = player.skillPoints || 2
+  this.level = player.level;
+  this.hp = player.hp;
+  this.strength = player.strength;
+  this.stealth = player.stealth;
+  this.body = player.body;
+  this.combat = player.combat;
+  this.skillPoints = player.skillPoints;
 };
 
 const defaultStats = new Player({
@@ -412,101 +410,136 @@ const defaultStats = new Player({
   stealth: 1,
   body: 1,
   combat: 1,
-  skillPoints: 12
+  skillPoints: 12,
 });
 
-let stats = defaultStats;
 
-function displayStats() {
-  return defaultStats;
+function displayDefaultStats() {
+  console.log(Object.entries(defaultStats));
 }
 
-const upgradeStats = async (stats) => {
-  console.log("Player Stats: " + defaultStats);
-  //!-----Stat Upgrade Functions Below -------
-  const stat = await ask(`\n Which stat would you like to upgrade?`);
-
-  const upgradeStrengthStat = async (stat) => {
-    if (stat == "strength") {
-      let spentSkillPoints = await ask(`\n How many points would you like to add to the Strength category? \n     `);
-      let points = Number(spentSkillPoints);
-
-      skillPoints -= points
-      strength += points;
-      hp += points * 10;
-      print(`Strength Points: ${strength}\n
-            Skill Points remaining: ${skillPoints}`);
-    } else {
-      handleInvalidMove();
-    }
-  }
-
-  const upgradeStealthStat = async (stat) => {
-    if (stat == "stealth") {
-      let spentSkillPoints = await ask(`\n How many points would you like to add to the Stealth category? \n     `);
-      let points = Number(spentSkillPoints);
-
-      skillPoints -= points
-      stealth += points;
-      hp += points * 10;
-      print(`Stealth Points: ${stealth}\n
-            Skill Points remaining: ${skillPoints}`);
-    } else {
-      handleInvalidMove();
-    }
-  }
-
-  const upgradeBodyStat = async (stat) => {
-    if (stat == "body") {
-      let spentSkillPoints = await ask(`\n How many points would you like to add to the Body category? \n     `);
-      let points = Number(spentSkillPoints);
-
-      skillPoints -= points
-      body += points;
-      hp += points * 10;
-      print(`Body Points: ${body}\n
-            Skill Points remaining: ${skillPoints}`);
-    } else {
-      handleInvalidMove();
-    }
-  }
-      
-  const upgradeCombatStat = async (stat) => {
-    if (stat == "combat") {
-      let spentSkillPoints = await ask(`\n How many points would you like to add to the Combat category? \n     `);
-      let points = Number(spentSkillPoints);
-
-      skillPoints -= points
-      combat += points;
-      hp += points * 10;
-      print(`Combat Points: ${combat}\n
-            Skill Points remaining: ${skillPoints}`);
-    } else {
-      handleInvalidMove();
-    }
-  }
-
-
+async function displayStats() {
+  displayDefaultStats();
+  console.log(`\n `)
+  upgradeOrContinue();
   
-    
-  if (stat) {
-    console.log(`/\n Upgrading: ${stat} \n`)
-    switch (stat) {
-      case "strength":
-        upgradeStrengthStat();
-      case "stealth":
-        upgradeStealthStat();
-    }
+}
+
+//!-----Stat Upgrade Functions Below -------
+
+const upgradeLevel = async() = {
+  //TODO: Upgrade Level fx
+  //if all categories add up to 15
+  //level++
+  //for every level, give 5 skill points
+  //add 25hp for level 2, increase by 1.75 every level
+  //max of 8 levels
+}
+
+const upgradeStats = async () => {
+  console.log("Player Stats:");
+  displayDefaultStats();
+  let upgradeInput = await ask(`\n Which stat would you like to upgrade?`);
+  let upgradeCategory = upgradeInput.trim().toLowerCase();
+  switch (upgradeCategory) {
+    case "strength":
+      upgradeStrengthStat();
+      break;
+    case "stealth":
+      upgradeStealthStat();
+      break;
+    case "body":
+      upgradeBodyStat();
+      break;
+    case "combat":
+      upgradeCombatStat();
+      break;
   }
 };
+
+const upgradeStrengthStat = async () => {
+  let player = defaultStats;
+  
+  let spentSkillPoints = await ask(`\n How many points would you like to add to the Strength category? \n     `);
+  let points = Number(spentSkillPoints);
+
+  player.skillPoints -= points
+  player.strength += points;
+  player.hp += points * 10;
+  console.log(`Strength Points: ${player.strength}\n
+            Skill Points remaining: ${player.skillPoints}`);
+  upgradeOrContinue();
+}
+
+
+const upgradeStealthStat = async () => {
+  let player = defaultStats;
+  
+  let spentSkillPoints = await ask(`\n How many points would you like to add to the Stealth category? \n     `);
+  let points = Number(spentSkillPoints);
+
+  player.skillPoints -= points
+  player.stealth += points;
+  player.hp += points * 10;
+  console.log(`Stealth Points: ${player.stealth}\n
+            Skill Points remaining: ${player.skillPoints}`);
+  upgradeOrContinue()
+}
+
+const upgradeBodyStat = async () => {
+  let player = defaultStats;
+  
+  let spentSkillPoints = await ask(`\n How many points would you like to add to the Body category? \n     `);
+  let points = Number(spentSkillPoints);
+
+  player.skillPoints -= points
+  player.body += points;
+  player.hp += points * 5;
+  console.log(`Body Points: ${player.body}\n
+            Skill Points remaining: ${player.skillPoints}`);
+  upgradeOrContinue();
+}
+
+const upgradeCombatStat = async (stat) => {
+  let player = defaultStats;
+  
+  let spentSkillPoints = await ask(`\n How many points would you like to add to the Combat category? \n     `);
+  let points = Number(spentSkillPoints);
+
+  player.skillPoints -= points
+  player.combat += points;
+  player.hp += points * 10;
+  console.log(`Combat Points: ${player.combat}\n
+            Skill Points remaining: ${player.skillPoints}`);
+  upgradeOrContinue();
+}
+
+async function upgradeOrContinue() {
+  displayDefaultStats();
+    let input = await ask(`Would you like to upgrade another stat or continue the game?\n
+  Type 'upgrade' or 'continue'\n`);
+    let answer = input.toLowerCase();
+    console.log(answer);
+    switch (answer) {
+      case "upgrade":
+        upgradeStats();
+        return;
+      case "start":
+        start();
+        break;
+      default:
+        handleInvalidMove();
+    }
+}
+  //!------Upgrade Functions END-------
 
   async function playerActions(playerAction) {
     let action = playerAction;
     switch (action) {
       case "stats":
         if (action == "stats") {
-          console.log(defaultStats);
-          sameRoom(currentLocation);
+          displayStats();
+          
         }
       
       case "weapons":
