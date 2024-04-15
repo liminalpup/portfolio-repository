@@ -1,5 +1,7 @@
 //TODO: help/look fx's
-//* sameRoom() skips room descriptions after room actions when player didn't change room. look/help fx's can repeat description or show available commands
+// TODO: Now that upgradeLevel function works, I have to make the function recognize the level numbers, extract the given point value from each level, and check it against the amount of skill points the player has accumulated. Adjusting the skillPoints to 100 and maxing a category trips error handling so far.
+//TODO: research Array constructors more deeply to further understanding of how to push obj variables to other fx's
+//TODO: take the sameRoom function out of upgradeLevel and replace it with upgradeOrContinue() fx.
 //TODO: weapon class constructor? (how will that change inventory rules? e.g. rifle)
 //*ideas: HP, fx for randomized hits (maybe), inventory influences stats or something like that?
 //TODO: enemies constructor (enemies extends Location? maybe to attach each enemy to locations??) + hp system + enemies locations
@@ -393,7 +395,7 @@ async function roomActions(answerArray) {
 //TODO: create a stats object that holds default player stats
 //* these stats will be affected by several functions, e.g. interactions with enemies, controlling entrance access/wield ability (must be a certain level), and will affect damage done by each weapon. certain body stat will unlock escape methods. stealth will give ability to avoid enemies
 // Perhaps in future will implement a certain amount of skill points available by default and earned by in-game actions.
-//! Player Objects Below------------------------------
+//! Player/Stats/Level Objects Below------------------------------
 function Player(player) {
   this.level = player.level;
   this.hp = player.hp;
@@ -403,16 +405,57 @@ function Player(player) {
   this.combat = player.combat;
   this.skillPoints = player.skillPoints;
 };
+  
+  const defaultStats = new Player({
+    level: 1,
+    hp: 100,
+    strength: 1,
+    stealth: 1,
+    body: 1,
+    combat: 1,
+    skillPoints: 100,
+  });
 
-const defaultStats = new Player({
-  hp: 100,
-  strength: 1,
-  stealth: 1,
-  body: 1,
-  combat: 1,
-  skillPoints: 12,
-});
+function Level(level) {
+  this.levelOne = level.levelOne;
+  this.levelTwo = level.levelTwo;
+  this.levelThree = level.levelThree;
+  this.levelFour = level.levelFour;
+  this.levelFive = level.levelFive;
+  this.levelSix = level.levelSix;
+  this.levelSeven = level.levelSeven;
+  this.levelEight = level.levelEight;
+}
+  
+const playerLevel = new Level({
+  levelOne: 12,
+  levelTwo: 15,
+  levelThree: 20,
+  levelFour: 25,
+  levelFive: 30,
+  levelSix: 35,
+  levelSeven: 40,
+  levelEight: 45,
+})
+  
+const levelUpPoints = Number(defaultStats.strength + defaultStats.stealth + defaultStats.body + defaultStats.combat); 
+console.log(levelUpPoints);
 
+levelOneNumber = Number(playerLevel.levelOne);
+levelTwoNumber = Number(playerLevel.levelTwo);
+levelThreeNumber = Number(playerLevel.levelThree);
+levelFourNumber = Number(playerLevel.levelFour);
+levelFiveNumber = Number(playerLevel.levelFive);
+levelSixNumber = Number(playerLevel.levelSix);
+levelSevenNumber = Number(playerLevel.levelSeven);
+levelEightNumber = Number(playerLevel.levelEight);
+
+let levelFilter = (Object.keys(defaultStats)).filter(cat => cat[0] != 'level' && cat[0] != 'skillPoints' && cat[0] != 'hp');
+
+console.log(defaultStats) 
+
+hp = defaultStats.hp;
+skillPoints = defaultStats.skillPoints;
 
 function displayDefaultStats() {
   console.log(Object.entries(defaultStats));
@@ -426,15 +469,61 @@ async function displayStats() {
 }
 
 //!-----Stat Upgrade Functions Below -------
+//TODO: Upgrade Level fx
 
-const upgradeLevel = async() = {
-  //TODO: Upgrade Level fx
+const upgradeLevel = async () => {
+  console.log(`works from upgradeLevel`);
+
+  levelOne = levelOneNumber;
+  levelTwo = levelTwoNumber; 
+  levelThree = levelThreeNumber; 
+  levelFour = levelFourNumber;  
+  levelFive = levelFiveNumber;  
+  levelSix = levelSixNumber;
+  levelSeven = levelSevenNumber;
+  levelEight = levelEightNumber;
+
+  if (levelThree > levelUpPoints >= levelTwo) {
+    level = 2;
+    hp += 50;
+    skillPoints += 3;
+  } else if (levelFour > levelUpPoints >= levelThree) {
+    level = 3;
+    hp += 50;
+    skillPoints += 3;
+  } else if (levelFive > levelUpPoints >= levelFour) {
+    level = 4;
+    hp += 50;
+    skillPoints += 3;
+  } else if (levelSix > levelUpPoints >= levelFive) {
+    level = 5;
+    hp += 50;
+    skillPoints += 3;
+  } else if (levelSeven > levelUpPoints >= levelSix) {
+    level = 6;
+    hp += 50;
+    skillPoints += 3;
+  } else if (levelEight > levelUpPoints >= levelSeven) {
+    level = 7;
+    hp += 50;
+    skillPoints += 3;
+  } else if (levelUpPoints >= levelEight) {
+    level = 8;
+    hp += 50;
+    skillPoints += 3;
+  } else {
+    handleInvalidMove();
+  }
+};
+  
+
+
+
   //if all categories add up to 15
   //level++
   //for every level, give 5 skill points
   //add 25hp for level 2, increase by 1.75 every level
   //max of 8 levels
-}
 
 const upgradeStats = async () => {
   console.log("Player Stats:");
@@ -453,6 +542,9 @@ const upgradeStats = async () => {
       break;
     case "combat":
       upgradeCombatStat();
+      break;
+    case "level":
+      upgradeLevel();
       break;
   }
 };
@@ -534,30 +626,21 @@ async function upgradeOrContinue() {
   //!------Upgrade Functions END-------
 
   async function playerActions(playerAction) {
-    let action = playerAction;
+    let action = playerAction.trim().toLowerCase();
     switch (action) {
       case "stats":
-        if (action == "stats") {
-          displayStats();
-          
-        }
-      
+        displayStats();
+        break;
       case "weapons":
-        if (action == "weapons") {
           //display weapons and mark equipped as [Equipped] and unequipped as [Equip], with option to change 
           console.log("works from weapons");
           sameRoom(currentLocation);
-        }
-    
       case "inventory":
-        if (playerAction == "inventory") {
-          //display inventory
           console.log(`\n
           INVENTORY:
           `);
           console.log(inventory)
           console.log(`\n`)
           sameRoom(currentLocation);
-        }
     }
   }
