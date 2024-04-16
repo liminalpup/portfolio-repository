@@ -530,6 +530,7 @@ const upgradeStats = async () => {
   displayDefaultStats();
   let upgradeInput = await ask(`\n Which stat would you like to upgrade?`);
   let upgradeCategory = upgradeInput.trim().toLowerCase();
+  
   switch (upgradeCategory) {
     case "strength":
       upgradeStrengthStat();
